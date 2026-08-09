@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistem Management Documente (Pasul 6)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f6f9; }
+
+        /* Navbar Navigation */
+        .navbar { background-color: #343a40; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; }
+        .navbar h2 { color: white; margin: 0; font-size: 20px; }
+        .nav-links button { background: transparent; border: none; color: #cfd8dc; padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; }
+        .nav-links button:hover, .nav-links button.active { background-color: #007bff; color: white; }
+
+        .container { padding: 30px; max-width: 1100px; margin: 0 auto; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Dashboard Cards */
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        .card-stat { background: white; border-radius: 8px; padding: 20px; border: 1px solid #e0e0e0; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card-stat h3 { margin: 0; font-size: 32px; color: #007bff; }
+        .card-stat p { margin: 5px 0 0 0; color: #6c757d; font-weight: bold; }
+
+        /* Form & Cards */
+        .card { background: white; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; }
+        input[type="text"], input[type="email"], input[type="password"], textarea, select { width: 100%; max-width: 400px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+        button.btn-primary { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button.btn-primary:hover { background-color: #218838; }
+        button.btn-download { background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+        th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h2>PartajareDocumente</h2>
+    <div class="nav-links">
+        <button onclick="navigheaza('dashboard')" class="active">Dashboard</button>
+        <button onclick="navigheaza('upload')">Incarcare Document</button>
+        <button onclick="navigheaza('documente')">Lista Documente & Istoric</button>
+        <button onclick="navigheaza('partajare')">Partajare Document</button>
+        <button onclick="navigheaza('auth')">Autentificare / Inregistrare</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ecran principal -->
+    <div id="page-dashboard" class="page active">
+        <h2>Dashboard Principal</h2>
+        <div class="card-grid">
+            <div class="card-stat">
+                <h3 id="statTotalDoc">1</h3>
+                <p>Documente Totale</p>
+            </div>
+            <div class="card-stat">
+                <h3 id="statVersiuni">1</h3>
+                <p>Versiuni Salvate </p>
+            </div>
+            <div class="card-stat">
+                <h3>0</h3>
+                <p>Documente Partajate</p>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Aplicatie Gestionare Documente </h3>
+        </div>
+    </div>
+
+    <!-- incarcare document nou -->
+    <div id="page-upload" class="page">
+        <div class="card">
+            <h2>Incarcare Document Nou</h2>
+            <div class="form-group">
+                <label for="title">Titlu:</label>
+                <input type="text" id="title" placeholder="Introdu titlul">
+            </div>
+            <div class="form-group">
+                <label for="description">Descriere (Optional):</label>
+                <textarea id="description" rows="3" placeholder="Introdu descrierea"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="fileSelector">Alege Fisierul:</label>
+                <input type="file" id="fileSelector">
+            </div>
+            <button class="btn-primary" onclick="trimiteDocumentNou()">Incarca Document</button>
+            <p id="statusUpload" style="font-weight: bold; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <!-- lista documente si istoric versiuni -->
+    <div id="page-documente" class="page">
+        <div class="card">
+            <h2>Lista documente accesibile & Istoric versiuni</h2>
+            <button onclick="incarcaListaDocumente()" style="padding: 6px 12px; margin-bottom: 10px;">Reimprospateaza</button>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID Document</th>
+                    <th>Detalii Document</th>
+                    <th>Data Crearii</th>
+                    <th>Istoric Versiuni Existente</th>
+                    <th>Incarcare Versiune Noua</th>
+                </tr>
+                </thead>
+                <tbody id="tabelDocumente">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- partajare document -->
+    <div id="page-partajare" class="page">
+        <div class="card">
+            <h2>Partajare Document</h2>
+            <p>Trimite accesul la un document catre alți utilizatori din sistem.</p>
+
+            <div class="form-group">
+                <label for="shareDocSelect">Alege Documentul:</label>
+                <select id="shareDocSelect">
+                    <option value="1">1 - peda</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="shareEmail">Email Utilizator (Partajeaza cu):</label>
+                <input type="email" id="shareEmail" placeholder="ex: coleg@example.com">
+            </div>
+
+            <button class="btn-primary" onclick="partajeazaDocument()">Trimite Acces Partajat</button>
+        </div>
+    </div>
+
+    <div id="page-auth" class="page">
+        <div class="card-grid">
+            <!--Autentificare -->
+            <div class="card" style="margin: 0;">
+                <h2>Autentificare</h2>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" placeholder="student@univ.ro">
+                </div>
+                <div class="form-group">
+                    <label>Parola:</label>
+                    <input type="password" placeholder="******">
+                </div>
+                <button class="btn-primary" onclick="alert('Autentificare cu succes!')">Login</button>
+            </div>
+
+            <!-- Inregistrare -->
+            <div class="card" style="margin: 0; grid-column: span 2;">
+                <h2>Pagina Inregistrare</h2>
+                <div class="form-group">
+                    <label>Nume Complet:</label>
+                    <input type="text" placeholder="Diana ...">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" placeholder="student@univ.ro">
+                </div>
+                <div class="form-group">
+                    <label>Parola Noua:</label>
+                    <input type="password" placeholder="******">
+                </div>
+                <button class="btn-primary" onclick="alert('Cont creat cu succes!')">Creeaza Cont</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    window.onload = function() {
+        incarcaListaDocumente();
+    };
+
+    function navigheaza(paginaId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+
+        document.getElementById('page-' + paginaId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // 1. Incarcare Document Nou
+    async function trimiteDocumentNou() {
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const fileInput = document.getElementById('fileSelector');
+        const status = document.getElementById('statusUpload');
+
+        const uploadedBy = prompt("Introdu numele/email-ul tău pentru încărcare:", "Diana");
+        if (!uploadedBy) return;
+
+        if (!title || !fileInput.files[0]) {
+            alert("Titlul si fisierul sunt obligatorii!");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("description", description);
+        formData.append("file", fileInput.files[0]);
+        formData.append("uploadedBy", uploadedBy);
+
+        status.style.color = "blue";
+        status.innerText = "Se incarca...";
+
+        try {
+            const response = await fetch('http://localhost:8080/api/documents', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                status.style.color = "green";
+                status.innerText = "Document salvat cu succes!";
+                document.getElementById('title').value = '';
+                document.getElementById('description').value = '';
+                fileInput.value = '';
+                incarcaListaDocumente();
+            } else {
+                status.style.color = "red";
+                status.innerText = "Eroare pe server!";
+            }
+        } catch (err) {
+            console.error(err);
+            status.style.color = "red";
+            status.innerText = "Nu s-a putut contacta serverul.";
+        }
+    }
+
+    // 2. Afisare Lista & Istoric Versiuni
+    async function incarcaListaDocumente() {
+        try {
+            const response = await fetch('http://localhost:8080/api/documents');
+            const documente = await response.json();
+
+            const tbody = document.getElementById('tabelDocumente');
+            const selectDoc = document.getElementById('shareDocSelect');
+            tbody.innerHTML = '';
+            selectDoc.innerHTML = '';
+
+            let totalVersiuni = 0;
+
+            documente.forEach(doc => {
+                selectDoc.innerHTML += `<option value="${doc.id}">${doc.id} - ${doc.title}</option>`;
+
+                let versiuniHTML = '<ul>';
+                if (doc.versions) {
+                    totalVersiuni += doc.versions.length;
+                    doc.versions.forEach(v => {
+                        versiuniHTML += `<li>
+                                <strong>v${v.versionNumber}</strong>: ${v.originalFileName}
+                                <small style="color: #555;">(de: <b>${v.uploadedBy || 'Diana'}</b>)</small>
+                                <a href="http://localhost:8080/api/documents/versions/${v.id}/download" target="_blank">
+                                    <button class="btn-download" style="padding: 2px 6px; font-size: 11px;">Descarca BLOB</button>
+                                </a>
+                            </li>`;
+                    });
+                }
+                versiuniHTML += '</ul>';
+
+                const row = `<tr>
+                        <td><strong>${doc.id}</strong></td>
+                        <td><strong>${doc.title}</strong><br><small>${doc.description || 'Fara descriere'}</small></td>
+                        <td>${new Date(doc.createdAt).toLocaleString()}</td>
+                        <td>${versiuniHTML}</td>
+                        <td>
+                            <input type="file" id="file_v_${doc.id}" style="font-size: 11px;"><br>
+                            <button class="btn-primary" onclick="adaugaVersiuneNoua(${doc.id})" style="padding: 3px 8px; font-size: 11px; margin-top: 4px;">Upload v${doc.versions ? doc.versions.length + 1 : 1}</button>
+                        </td>
+                    </tr>`;
+                tbody.innerHTML += row;
+            });
+
+            document.getElementById('statTotalDoc').innerText = documente.length;
+            document.getElementById('statVersiuni').innerText = totalVersiuni;
+
+        } catch (error) {
+            console.error("Eroare la incarcare:", error);
+        }
+    }
+
+    // 3. Upload versiune noua
+    async function adaugaVersiuneNoua(docId) {
+        const fileInput = document.getElementById(`file_v_${docId}`);
+        if (!fileInput.files[0]) {
+            alert("Selecteaza un fisier pentru noua versiune!");
+            return;
+        }
+
+        const uploadedBy = prompt("Introdu numele/email-ul tău pentru versiunea nouă:", "Diana");
+        if (!uploadedBy) return;
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        formData.append("uploadedBy", uploadedBy);
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/documents/${docId}/versions`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("Versiune noua adaugata!");
+                incarcaListaDocumente();
+            } else {
+                alert("Eroare la adaugare versiune!");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Eroare de conexiune!");
+        }
+    }
+
+    // 4. Partajare
+    function partajeazaDocument() {
+        const email = document.getElementById('shareEmail').value;
+        if (!email) {
+            alert("Te rog introdu adresa de email!");
+            return;
+        }
+        alert("Documentul a fost partajat cu succes catre: " + email);
+        document.getElementById('shareEmail').value = '';
+    }
+</script>
+</body>
+</html>
