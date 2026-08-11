@@ -36,11 +36,20 @@ public class DocumentVersion {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
 
-    @Column(name = "uploaded_by")
-    private String uploadedBy;
+    @ManyToOne
+    @JoinColumn(name = "uploaded_by_user_id")
+    private User uploadedBy;
 
     public DocumentVersion() {
 
+    }
+
+    public User getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public void setUploadedBy(User uploadedBy) {
+        this.uploadedBy = uploadedBy;
     }
 
     public void setId(Long id) {
@@ -75,10 +84,6 @@ public class DocumentVersion {
         this.uploadedAt = uploadedAt;
     }
 
-    public void setUploadedBy(String uploadedBy) {
-        this.uploadedBy = uploadedBy;
-    }
-
     public Long getId() {
         return id;
     }
@@ -111,7 +116,4 @@ public class DocumentVersion {
         return uploadedAt;
     }
 
-    public String getUploadedBy() {
-        return uploadedBy;
-    }
 }
